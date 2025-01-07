@@ -1,29 +1,20 @@
 import 'package:flutter/material.dart';
 
 class FiboController2 {
-  Map<int, int> fiboMap = {};
   List<int> totalFib = [];
-  Map<int, Map<int, bool>> fiboMap2 = {};
+  Map<int, Map<int, bool>> fiboMap = {};
   bool isLatestDeleted = false;
   int count = 40;
 
-  Map<int, int> generatedFibonacci() {
+  Map<int, Map<int, bool>> generatedFibonacci() {
     for (var i = 0; i < count; i++) {
       totalFib.add(fibonacci(i));
     }
 
-    Map<int, int> indexedMap = totalFib.asMap().map(
-          (index, value) => MapEntry(index, value),
-        );
-
     Map<int, Map<int, bool>> indexedBoolMap =
         totalFib.asMap().map((key, value) => MapEntry(key, {value: false}));
 
-    print('index map bool $indexedBoolMap');
-
-    fiboMap = indexedMap;
-
-    fiboMap2 = indexedBoolMap;
+    fiboMap = indexedBoolMap;
 
     return fiboMap;
   }
@@ -58,22 +49,5 @@ class FiboController2 {
     } else {
       return;
     }
-  }
-
-  Map<int, Map<String, dynamic>> generateFiboJson(int n) {
-    Map<int, Map<String, dynamic>> fibonacciMap = {};
-    int a = 0, b = 1;
-    for (int i = 0; i <= n; i++) {
-      fibonacciMap[i] = {
-        "index": i,
-        "value": a,
-        "isActive": false,
-      };
-      int next = a + b;
-      a = b;
-      b = next;
-    }
-
-    return fibonacciMap;
   }
 }

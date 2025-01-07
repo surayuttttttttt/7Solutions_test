@@ -4,16 +4,16 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:solution/controller2.dart';
+import 'package:solution/services.dart';
 
-class Example extends StatefulWidget {
-  const Example({super.key});
+class SevenSolutionTest extends StatefulWidget {
+  const SevenSolutionTest({super.key});
 
   @override
-  State<Example> createState() => _ExampleState();
+  State<SevenSolutionTest> createState() => _SevenSolutionTestState();
 }
 
-class _ExampleState extends State<Example> {
+class _SevenSolutionTestState extends State<SevenSolutionTest> {
   FiboController2? fiboController2 = FiboController2();
   ScrollController outsidescrollController = ScrollController();
   ScrollController insideScrollController = ScrollController();
@@ -36,14 +36,14 @@ class _ExampleState extends State<Example> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text("Example")),
+        title: Center(child: Text("SevenSolutionTest")),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
               controller: outsidescrollController,
-              children: fiboController2!.fiboMap2.entries.map((entry) {
+              children: fiboController2!.fiboMap.entries.map((entry) {
                 int index = entry.key;
                 Map<int, bool> value = entry.value;
 
@@ -54,42 +54,12 @@ class _ExampleState extends State<Example> {
                   return ListTile(
                     onTap: () async {
                       if (fiboValue % 3 == 0) {
-                        circle.forEach((index, map) {
-                          map.forEach((fiboValue, isActive) {
-                            circle[index]![fiboValue] = false;
-                          });
-                        });
-                        circle.addAll({
-                          index: {fiboValue: true}
-                        });
-                        sortBottomSheetOrder();
+                        onListTileTap(fiboValue, index, circle);
                       } else if (fiboValue % 3 == 1) {
-                        square.forEach((index, map) {
-                          map.forEach((fiboValue, isActive) {
-                            square[index]![fiboValue] = false;
-                          });
-                        });
-                        square.addAll({
-                          index: {fiboValue: true}
-                        });
-                        sortBottomSheetOrder();
+                        onListTileTap(fiboValue, index, square);
                       } else if (fiboValue % 3 == 2) {
-                        cross.forEach((index, map) {
-                          map.forEach((fiboValue, isActive) {
-                            cross[index]![fiboValue] = false;
-                          });
-                        });
-                        cross.addAll({
-                          index: {fiboValue: true}
-                        });
-                        sortBottomSheetOrder();
+                        onListTileTap(fiboValue, index, cross);
                       }
-                      fiboController2!.fiboMap2.remove(index);
-                      setState(() {});
-
-                      await showSpecifiType(
-                          fiboController2!.getFiboType(fiboValue), index);
-                      print(fiboController2!.fiboMap2.toString());
                     },
                     tileColor: isActive ? Colors.red : Colors.white,
                     leading: Text('Index: $index, Number: $fiboValue'),
@@ -101,76 +71,6 @@ class _ExampleState extends State<Example> {
           )
         ],
       ),
-    );
-  }
-
-  showSpecifiType(int type, int index) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.75,
-          child: ListView(
-              controller: insideScrollController,
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              children: type == 1
-                  ? circle.entries.map((entry) {
-                      int index = entry.key;
-                      Map<int, bool> innerMap = entry.value;
-
-                      return Column(
-                        children: innerMap.entries.map((e) {
-                          int fiboValue = e.key;
-                          bool isActive = e.value;
-
-                          return buildListTile(
-                            fiboValue: fiboValue,
-                            isActive: isActive,
-                            index: index,
-                            specificTypeMap: circle,
-                          );
-                        }).toList(),
-                      );
-                    }).toList()
-                  : type == 2
-                      ? square.entries.map((entry) {
-                          int index = entry.key;
-                          Map<int, bool> innerMap = entry.value;
-
-                          return Column(
-                            children: innerMap.entries.map((e) {
-                              int fiboValue = e.key;
-                              bool isActive = e.value;
-                              return buildListTile(
-                                fiboValue: fiboValue,
-                                isActive: isActive,
-                                index: index,
-                                specificTypeMap: square,
-                              );
-                            }).toList(),
-                          );
-                        }).toList()
-                      : cross.entries.map((entry) {
-                          int index = entry.key;
-                          Map<int, bool> innerMap = entry.value;
-
-                          return Column(
-                            children: innerMap.entries.map((e) {
-                              int fiboValue = e.key;
-                              bool isActive = e.value;
-                              return buildListTile(
-                                fiboValue: fiboValue,
-                                isActive: isActive,
-                                index: index,
-                                specificTypeMap: cross,
-                              );
-                            }).toList(),
-                          );
-                        }).toList()),
-        );
-      },
     );
   }
 
@@ -188,7 +88,7 @@ class _ExampleState extends State<Example> {
 
     return ListTile(
       onTap: () async {
-        onRemove(specificTypeMap, fiboController2!.fiboMap2, index, fiboValue);
+        onRemove(specificTypeMap, fiboController2!.fiboMap, index, fiboValue);
         handleFiboListScroll(outsidescrollController, index);
       },
       tileColor: isActive ? Colors.green : Colors.white,
@@ -196,6 +96,72 @@ class _ExampleState extends State<Example> {
       subtitle: Text('Index: $index'),
       trailing: Icon(fiboController2!.getFiboIcon(fiboValue)),
     );
+  }
+
+  List<Column> buildListTileForSpecificType(
+      Map<int, Map<int, bool>> specificMap) {
+    return specificMap.entries.map((entry) {
+      int index = entry.key;
+      Map<int, bool> innerMap = entry.value;
+
+      return Column(
+        children: innerMap.entries.map((e) {
+          int fiboValue = e.key;
+          bool isActive = e.value;
+          return buildListTile(
+            fiboValue: fiboValue,
+            isActive: isActive,
+            index: index,
+            specificTypeMap: specificMap,
+          );
+        }).toList(),
+      );
+    }).toList();
+  }
+
+  showSpecifiType(int type, int index) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height / 1.75,
+          child: ListView(
+            controller: insideScrollController,
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            children: type == 1
+                ? buildListTileForSpecificType(
+                    circle,
+                  )
+                : type == 2
+                    ? buildListTileForSpecificType(
+                        square,
+                      )
+                    : buildListTileForSpecificType(
+                        cross,
+                      ),
+          ),
+        );
+      },
+    );
+  }
+
+  void onListTileTap(int fiboValue, int index,
+      Map<int, Map<int, bool>> specificMapType) async {
+    specificMapType.forEach((index, map) {
+      map.forEach((fiboValue, isActive) {
+        specificMapType[index]![fiboValue] = false;
+      });
+    });
+    specificMapType.addAll({
+      index: {fiboValue: true}
+    });
+    sortBottomSheetOrder();
+    fiboController2!.fiboMap.remove(index);
+    setState(() {});
+
+    await showSpecifiType(fiboController2!.getFiboType(fiboValue), index);
   }
 
   void onRemove(Map<int, Map<int, bool>> specificTypeMap,
@@ -206,12 +172,12 @@ class _ExampleState extends State<Example> {
     //SET ALL MAP VALUE FOR RESETTING TILE COLOUR DISPLAY
     fiboMap.forEach((index, value) {
       value.forEach((fiboValue, isActive) {
-        fiboController2!.fiboMap2[index]![fiboValue] = false;
+        fiboController2!.fiboMap[index]![fiboValue] = false;
       });
     });
 
     //SET BOOLEAN FOR DISPLAYING RED TILE
-    fiboController2!.fiboMap2.addAll({
+    fiboController2!.fiboMap.addAll({
       index: {fiboValue: true}
     });
 
@@ -223,19 +189,19 @@ class _ExampleState extends State<Example> {
   }
 
   void resetTileColour() {
-    fiboController2!.fiboMap2.forEach((index, value) {
+    fiboController2!.fiboMap.forEach((index, value) {
       value.forEach((fiboValue, isActive) {
-        fiboController2!.fiboMap2[index]![fiboValue] = false;
+        fiboController2!.fiboMap[index]![fiboValue] = false;
       });
     });
   }
 
   void sortMap() {
     LinkedHashMap<int, Map<int, bool>> sortedMap2 = LinkedHashMap.fromEntries(
-      fiboController2!.fiboMap2.entries.toList()
+      fiboController2!.fiboMap.entries.toList()
         ..sort((a, b) => a.key.compareTo(b.key)),
     );
-    fiboController2!.fiboMap2 = sortedMap2;
+    fiboController2!.fiboMap = sortedMap2;
   }
 
   void sortBottomSheetOrder() {
